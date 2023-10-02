@@ -1,0 +1,85 @@
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import FastImage from 'react-native-fast-image';
+import {ApplicationStyles, Colors, Fonts, width} from '../theme';
+import {AppImage} from '../assets/icon';
+import {useState} from 'react';
+
+const ProductItem = ({item, index, onPress = () => null}) => {
+  const [isLiked, setIsLiked] = useState(false);
+
+  const onLikePress = () => {
+    setIsLiked(!isLiked);
+  };
+
+  return (
+    <TouchableOpacity activeOpacity={0.5} style={styles.item} onPress={onPress}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onLikePress}>
+        <FastImage
+          source={isLiked ? AppImage.fillHeart : AppImage.emptyHeart}
+          style={styles.likeIcon}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+      <FastImage source={{uri: item?.images[0]}} style={styles.img} />
+      <View
+        style={[
+          ApplicationStyles.rowAlignCenterJustifyBetween,
+          {paddingTop: 46},
+        ]}>
+        <Text style={styles.price}>{`$${item?.price}`}</Text>
+        <TouchableOpacity activeOpacity={0.5}>
+          <FastImage
+            source={AppImage.add}
+            style={styles.addCartIcon}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.title} numberOfLines={2}>
+        {item?.title}
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  item: {
+    width: width * 0.5 - 28,
+    padding: 20,
+    backgroundColor: Colors.white20,
+    borderRadius: 12,
+    marginBottom: 22,
+    shadowColor: Colors.black10,
+    shadowOffset: {width: 0, height: 0},
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  img: {
+    width: 68,
+    height: 68,
+    borderRadius: 10,
+    alignSelf: 'center',
+  },
+  price: {
+    fontSize: Fonts.size.f14,
+    fontWeight: Fonts.Weight.semi,
+    color: Colors.black10,
+  },
+  likeIcon: {
+    width: 14,
+    height: 14,
+  },
+  addCartIcon: {
+    width: 24,
+    height: 24,
+  },
+  title: {
+    paddingTop: 4,
+    fontSize: Fonts.size.f12,
+    fontWeight: Fonts.Weight.lower,
+    color: Colors.grey30,
+  },
+});
+
+export default ProductItem;
