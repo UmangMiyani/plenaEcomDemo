@@ -2,13 +2,32 @@ import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {ApplicationStyles, Colors, Fonts, width} from '../theme';
 import {AppImage} from '../assets/icon';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {setCartArr, updateFeedLikes} from '../store/feed/reducer';
 
-const ProductItem = ({item, index, onPress = () => null}) => {
+const ProductItem = ({item, index, showBtn = true, onPress = () => null}) => {
+  const dispatch = useDispatch();
+  const {feed} = useSelector(state => state);
+
+  const productArr = feed?.productArr;
+
   const [isLiked, setIsLiked] = useState(false);
+
+  useEffect(() => {
+    setIsLiked(item?.liked);
+  }, [item]);
 
   const onLikePress = () => {
     setIsLiked(!isLiked);
+    let index = productArr?.findIndex(x => x?.id === item?.id);
+    if (index !== -1) {
+      dispatch(updateFeedLikes({index: index}));
+    }
+  };
+
+  const addCartItem = () => {
+    dispatch(setCartArr(item));
   };
 
   return (
@@ -27,13 +46,15 @@ const ProductItem = ({item, index, onPress = () => null}) => {
           {paddingTop: 46},
         ]}>
         <Text style={styles.price}>{`$${item?.price}`}</Text>
-        <TouchableOpacity activeOpacity={0.5}>
-          <FastImage
-            source={AppImage.add}
-            style={styles.addCartIcon}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
+        {showBtn && (
+          <TouchableOpacity activeOpacity={0.5} onPress={addCartItem}>
+            <FastImage
+              source={AppImage.add}
+              style={styles.addCartIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        )}
       </View>
       <Text style={styles.title} numberOfLines={2}>
         {item?.title}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {FlatList, Text, TouchableOpacity, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ApplicationStyles} from '../../theme';
@@ -8,10 +8,35 @@ import {AppConstant} from '../../constant';
 import styles from './CartScreen.styles';
 import CartItem from '../../component/CartItem';
 import {ActionButton} from '../../component';
+import {useSelector} from 'react-redux';
 
 const CartScreen = ({navigation}) => {
-  const renderCartItem = () => {
-    return <CartItem />;
+  const {feed} = useSelector(state => state);
+
+  const [cartList, setCartList] = useState([]);
+
+  const cartArr = feed?.cartArr;
+  const deliveryCharge = 2.0;
+
+  useEffect(() => {
+    setCartList(cartArr);
+  }, [cartArr]);
+
+  const renderCartItem = ({item}) => {
+    return <CartItem item={item} />;
+  };
+
+  const subTotal = () => {
+    let arr = [];
+    cartList?.map(res => {
+      arr.push(res?.price);
+    });
+    const sum = arr.reduce(add, 0);
+
+    function add(accumulator, a) {
+      return accumulator + a;
+    }
+    return sum;
   };
 
   return (
@@ -32,7 +57,7 @@ const CartScreen = ({navigation}) => {
         <Text style={styles.headerText}>{AppConstant.SHOPPING_CART}</Text>
       </View>
       <FlatList
-        data={[0, 0, 0, 0, 0, 0, 0, 0, 0]}
+        data={cartList}
         renderItem={renderCartItem}
         style={styles.flatlist}
         ListFooterComponent={() => {
@@ -44,19 +69,22 @@ const CartScreen = ({navigation}) => {
             </TouchableOpacity>
           );
         }}
+        keyExtractor={(item, index) => item?.id + index}
       />
       <View style={styles.checkOutContainer}>
         <View style={styles.priceInfo}>
           <Text style={styles.infoTitle}>{AppConstant.SUBTOTAL}</Text>
-          <Text style={styles.infoPrice}>$35.25</Text>
+          <Text style={styles.infoPrice}>{`$${subTotal()}`}</Text>
         </View>
         <View style={styles.priceInfo}>
           <Text style={styles.infoTitle}>{AppConstant.DELIVERY}</Text>
-          <Text style={styles.infoPrice}>$2.00</Text>
+          <Text style={styles.infoPrice}>{`$${deliveryCharge}`}</Text>
         </View>
         <View style={styles.priceInfo}>
           <Text style={styles.infoTitle}>{AppConstant.TOTAL}</Text>
-          <Text style={styles.infoPrice}>$37.25</Text>
+          <Text style={styles.infoPrice}>{`$${
+            subTotal() + deliveryCharge
+          }`}</Text>
         </View>
         <ActionButton
           title={AppConstant.PROCEED_CHECKOUT}

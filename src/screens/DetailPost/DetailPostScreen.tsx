@@ -19,12 +19,17 @@ import {ActionButton} from '../../component';
 import {get} from '../../services/ApiServices';
 import API_CONSTANT from '../../services/ApiConstant';
 import {AirbnbRating} from 'react-native-ratings';
+import {useDispatch, useSelector} from 'react-redux';
+import {updateFeedLikes} from '../../store/feed/reducer';
 
 const DetailPostScreen = ({navigation, route}: any) => {
+  const dispatch = useDispatch();
   const {top} = useSafeAreaInsets();
   const [productDetails, setProductDetails] = useState([]);
   const [isLiked, setIsLiked] = useState(false);
+  const {feed} = useSelector(state => state);
 
+  const productArr = feed?.productArr;
   const postId = route?.params?.postId;
   const scrollX = useRef(new Animated.Value(0)).current;
   const {width: windowWidth} = useWindowDimensions();
@@ -33,13 +38,22 @@ const DetailPostScreen = ({navigation, route}: any) => {
     getProductList();
   }, []);
 
+  useEffect(() => {
+    setIsLiked(productDetails?.liked);
+  }, [productDetails]);
+
   const getProductList = () => {
-    let endPoints = `${API_CONSTANT.PRODUCTS}/${postId}`;
-    get(endPoints)
-      .then(res => {
-        setProductDetails(res);
-      })
-      .catch(err => Alert.alert(err?.response?.data));
+    let index = productArr.findIndex(x => x.id === postId);
+    if (index !== -1) {
+      setProductDetails(productArr[index]);
+    } else {
+      let endPoints = `${API_CONSTANT.PRODUCTS}/${postId}`;
+      get(endPoints)
+        .then(res => {
+          setProductDetails(res);
+        })
+        .catch(err => Alert.alert(err?.response?.data));
+    }
   };
 
   const onPressCart = () => {
@@ -48,6 +62,10 @@ const DetailPostScreen = ({navigation, route}: any) => {
 
   const onPressLike = () => {
     setIsLiked(!isLiked);
+    let index = productArr?.findIndex(x => x?.id === postId);
+    if (index !== -1) {
+      dispatch(updateFeedLikes({index: index}));
+    }
   };
 
   const onPressAddCart = () => {};

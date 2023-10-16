@@ -1,30 +1,51 @@
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {ApplicationStyles, Colors, Fonts} from '../theme';
-import {AppImage} from '../assets/icon';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {decreaseCartItem, removeFromCart} from '../store/feed/reducer';
 
-const CartItem = () => {
+const CartItem = ({item}) => {
+  const dispatch = useDispatch();
+  const {feed} = useSelector(state => state);
   const [itemCount, setItemCount] = useState(0);
+
+  const cartArr = feed?.cartArr;
+
+  useEffect(() => {
+    setItemCount(item?.itemCount);
+  }, [item]);
 
   const increase = () => {
     setItemCount(itemCount + 1);
   };
 
   const decrease = () => {
-    itemCount > 0 && setItemCount(itemCount - 1);
+    setItemCount(itemCount - 1);
+    let index = cartArr?.findIndex(x => x?.id === item?.id);
+
+    itemCount > 1 ? dispatch(decreaseCartItem({index: index})) : removeItem();
+  };
+
+  const removeItem = () => {
+    const feedFiltered = cartArr?.filter(x => {
+      return x.id !== item?.id;
+    });
+    dispatch(removeFromCart(feedFiltered));
   };
 
   return (
     <View style={styles.cartItem}>
       <FastImage
         style={styles.icon}
-        source={AppImage.placeholderDark}
+        source={{uri: item?.images[0]}}
         resizeMode="contain"
       />
       <View style={{flex: 1, paddingLeft: 26}}>
-        <Text style={styles.text}>Bananas</Text>
-        <Text style={[styles.text, {fontWeight: Fonts.Weight.low}]}>$7.90</Text>
+        <Text style={styles.text}>{item?.title}</Text>
+        <Text style={[styles.text, {fontWeight: Fonts.Weight.low}]}>
+          {`$${item?.price}`}
+        </Text>
       </View>
 
       <View style={ApplicationStyles.rowAlignCenterJustifyBetween}>

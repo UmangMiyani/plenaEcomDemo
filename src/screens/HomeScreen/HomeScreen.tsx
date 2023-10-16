@@ -20,24 +20,37 @@ import styles from './HomeScreen.styles';
 import {CashBackItem, ProductItem} from '../../component';
 import {get} from '../../services/ApiServices';
 import API_CONSTANT from '../../services/ApiConstant';
+import {useDispatch, useSelector} from 'react-redux';
+import {addFeedArr} from '../../store/feed/reducer';
 
 const HomeScreen = ({navigation}: any) => {
+  const dispatch = useDispatch();
+  const {feed} = useSelector(state => state);
+
   const [searchText, SetSearchText] = useState();
   const [addressVal, setaddressVal] = useState(null);
   const [timeVal, setTimeVal] = useState(null);
   const [productList, setProductList] = useState([]);
-  const [isLoad, setIsLoad] = useState(true);
+  const [isLoad, setIsLoad] = useState(false);
+
+  const productArr = feed?.productArr;
+  const cartArr = feed?.cartArr;
 
   const cashBackOffer = [0, 0, 0, 0];
 
   useEffect(() => {
-    getProductList();
+    productArr?.length <= 0 && getProductList();
   }, []);
 
+  useEffect(() => {
+    setProductList(productArr);
+  }, [productArr]);
+
   const getProductList = () => {
+    setIsLoad(true);
     get(API_CONSTANT.PRODUCTS)
       .then(res => {
-        setProductList(res?.products);
+        dispatch(addFeedArr(res?.products));
       })
       .catch(err => Alert.alert(err?.response?.data))
       .finally(() => setIsLoad(false));
@@ -69,7 +82,7 @@ const HomeScreen = ({navigation}: any) => {
               resizeMode="contain"
             />
             <View style={styles.cartContainer}>
-              <Text style={styles.cartText}>3</Text>
+              <Text style={styles.cartText}>{cartArr?.length}</Text>
             </View>
           </TouchableOpacity>
         </View>
